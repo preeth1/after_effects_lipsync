@@ -4,21 +4,22 @@ import os
 import sphinxbase as sb
 import pocketsphinx as ps
 
-MODELDIR = '/Library/Python/2.7/site-packages/pocketsphinx/model'
-DATADIR = '/Users/preethi/Desktop'
-
-this_dir = os.getcwd()
+curr_dir = os.getcwd()
+audio_file = 'hello_world.mp3'
+model_dir = '/Library/Python/2.7/site-packages/pocketsphinx/model'
+data_dir = os.path.join(curr_dir, '../data/')
 
 # Create a decoder with certain model
 config = ps.Decoder.default_config()
-config.set_string('-hmm', os.path.join(MODELDIR, 'en-us'))
-config.set_string('-lm', os.path.join(MODELDIR, 'en-us.lm.bin'))
-config.set_string('-dict', os.path.join(MODELDIR, 'cmudict-en-us.dict'))
+config.set_string('-hmm', os.path.join(model_dir, 'en-us'))
+config.set_string('-lm', os.path.join(model_dir, 'en-us.lm.bin'))
+config.set_string('-dict', os.path.join(model_dir, 'cmudict-en-us.dict'))
 decoder = ps.Decoder(config)
 
 # Decode streaming data.
 decoder.start_utt()
-stream = open(os.path.join(DATADIR, 'TRLT.mp3'), 'rb')
+a = os.path.join(data_dir, audio_file)
+stream = open(os.path.join(data_dir, 'TRLT.wav'), 'rb')
 while True:
     buf = stream.read(1024)
     if buf:
