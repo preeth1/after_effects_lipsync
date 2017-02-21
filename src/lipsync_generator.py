@@ -19,7 +19,7 @@ decoder = ps.Decoder(config)
 # Decode streaming data.
 decoder.start_utt()
 a = os.path.join(data_dir, audio_file)
-stream = open(os.path.join(data_dir, 'TRLT.wav'), 'rb')
+stream = open(os.path.join(data_dir, audio_file), 'rb')
 while True:
     buf = stream.read(1024)
     if buf:
@@ -29,3 +29,9 @@ while True:
 decoder.end_utt()
 stream.close()
 print('Best hypothesis segments:', [seg.word for seg in decoder.seg()])
+
+
+# Access N best decodings.
+print ('Best 10 hypothesis: ')
+for best, i in zip(decoder.nbest(), range(10)):
+    print (best.hypstr, best.score)
