@@ -7,6 +7,8 @@ import pocketsphinx as ps
 MODELDIR = '/Library/Python/2.7/site-packages/pocketsphinx/model'
 DATADIR = '/Users/preethi/Desktop'
 
+this_dir = os.getcwd()
+
 # Create a decoder with certain model
 config = ps.Decoder.default_config()
 config.set_string('-hmm', os.path.join(MODELDIR, 'en-us'))
