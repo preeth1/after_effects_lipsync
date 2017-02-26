@@ -14,43 +14,14 @@ class LipsyncGenerator:
         keyword_entries = None
         audio_data_path, decoder = self._setup_decoder(audio_file, keyword_entries)
 
-        # obtain audio data
-        r = speech_recognition.Recognizer()
-        with speech_recognition.AudioFile(audio_data_path) as source:
-            audio_data = r.record(source)
-        # the included language models require audio to be 16-bit mono 16 kHz in little-endian format
-        raw_data = audio_data.get_raw_data(convert_rate=16000, convert_width=2)
+        raw_data = self._generate_raw_audio_data(audio_data_path)
 
-        # obtain recognition results
-        if keyword_entries is not None:
-            with tempfile.NamedTemporaryFile("w") as f:
-                # generate a keywords file - Sphinx documentation recommendeds sensitivities between 1e-50 and 1e-5
-                f.writelines("{} /1e{}/\n".format(keyword, 100 * sensitivity - 110) for keyword, sensitivity in keyword_entries)
-                f.flush()
-
-                # perform the speech recognition with the keywords file (this is inside the context manager so the file
-                # isn't deleted until we're done)
-                decoder.set_kws("keywords", f.name)
-                decoder.set_search("keywords")
-                # begin utterance processing
-                decoder.start_utt()
-                # process audio data with recognition enabled (no_search = False), as a full utterance (full_utt = True)
-                decoder.process_raw(raw_data, False, True)
-                # stop utterance processing
-                decoder.end_utt()
-        # no keywords, perform freeform recognition
-        else:
-            # begin utterance processing
-            decoder.start_utt()
-            # process audio data with recognition enabled (no_search = False), as a full utterance (full_utt = True)
-            decoder.process_raw(raw_data, False, True)
-            # stop utterance processing
-            decoder.end_utt()
+        self._perform_speech_recognition(decoder, raw_data, keyword_entries)
 
         script_list = [(seg.word, seg.start_frame, seg.end_frame) for seg in decoder.seg()]
         line_to_print = ''
         for word in script_list:
-            line_to_print = line_to_print + word[0]
+            line_to_print = line_to_print + word[0] + ' '
         print('Words I heard: ', line_to_print)
         return script_list
 
@@ -72,7 +43,8 @@ class LipsyncGenerator:
         assert isinstance(language, str), "``language`` must be a string"
         assert keyword_entries is None or all(
             isinstance(keyword, (type(""), type(u""))) and 0 <= sensitivity <= 1 for keyword, sensitivity in
-            keyword_entries), "``keyword_entries`` must be ``None`` or a list of pairs of strings and numbers between 0 and 1"
+            keyword_entries), "``keyword_entries`` must be ``None`` or a list of pairs of strings and numbers " \
+                              "between 0 and 1"
         # import the PocketSphinx speech recognition module
         try:
             from pocketsphinx import pocketsphinx
@@ -112,6 +84,45 @@ class LipsyncGenerator:
         decoder = pocketsphinx.Decoder(config)
 
         return audio_data_path, decoder
+
+    @staticmethod
+    def _generate_raw_audio_data(audio_data_path):
+        # obtain audio data
+        r = speech_recognition.Recognizer()
+        with speech_recognition.AudioFile(audio_data_path) as source:
+            audio_data = r.record(source)
+        # the included language models require audio to be 16-bit mono 16 kHz in little-endian format
+        raw_data = audio_data.get_raw_data(convert_rate=16000, convert_width=2)
+        return raw_data
+
+    @staticmethod
+    def _perform_speech_recognition(decoder, raw_data, keyword_entries):
+        # obtain recognition results
+        if keyword_entries is not None:
+            with tempfile.NamedTemporaryFile("w") as f:
+                # generate a keywords file - Sphinx documentation recommendeds sensitivities between 1e-50 and 1e-5
+                f.writelines(
+                    "{} /1e{}/\n".format(keyword, 100 * sensitivity - 110) for keyword, sensitivity in keyword_entries)
+                f.flush()
+
+                # perform the speech recognition with the keywords file (this is inside the context manager so the file
+                # isn't deleted until we're done)
+                decoder.set_kws("keywords", f.name)
+                decoder.set_search("keywords")
+                # begin utterance processing
+                decoder.start_utt()
+                # process audio data with recognition enabled (no_search = False), as a full utterance (full_utt = True)
+                decoder.process_raw(raw_data, False, True)
+                # stop utterance processing
+                decoder.end_utt()
+        # no keywords, perform freeform recognition
+        else:
+            # begin utterance processing
+            decoder.start_utt()
+            # process audio data with recognition enabled (no_search = False), as a full utterance (full_utt = True)
+            decoder.process_raw(raw_data, False, True)
+            # stop utterance processing
+            decoder.end_utt()
 
 
 if __name__ == "__main__":
