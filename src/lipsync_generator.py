@@ -9,7 +9,7 @@ class LipsyncGenerator:
 
     def generate_timestamp_script_list(self):
 
-        audio_file = 'TRLT.wav'
+        audio_file = 'hello_world.wav'
         # explicitly specified set of keywords
         keyword_entries = None
         audio_data_path, decoder = self._setup_decoder(audio_file, keyword_entries)
@@ -17,8 +17,8 @@ class LipsyncGenerator:
         raw_data = self._generate_raw_audio_data(audio_data_path)
 
         self._perform_speech_recognition(decoder, raw_data, keyword_entries)
-
-        script_list = [(seg.word, seg.start_frame, seg.end_frame) for seg in decoder.seg()]
+        script_list = [(seg.word, seg.start_frame, seg.end_frame, decoder.lookup_word(seg.word))
+                       for seg in decoder.seg()]
         line_to_print = ''
         for word in script_list:
             line_to_print = line_to_print + word[0] + ' '
