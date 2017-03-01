@@ -8,7 +8,7 @@ class LipsyncGeneratorSetup:
         pass
 
     @staticmethod
-    def _setup_decoder(audio_file, keyword_entries):
+    def setup_decoder(audio_file, keyword_entries):
 
         language = "en-US"
 
@@ -68,7 +68,7 @@ class LipsyncGeneratorSetup:
         return audio_data_path, decoder
 
     @staticmethod
-    def _generate_raw_audio_data(audio_data_path):
+    def generate_raw_audio_data(audio_data_path):
         # obtain audio data
         r = speech_recognition.Recognizer()
         with speech_recognition.AudioFile(audio_data_path) as source:
@@ -78,7 +78,7 @@ class LipsyncGeneratorSetup:
         return raw_data
 
     @staticmethod
-    def _perform_speech_recognition(decoder, raw_data, keyword_entries):
+    def perform_speech_recognition(decoder, raw_data, keyword_entries):
         # obtain recognition results
         if keyword_entries is not None:
             with tempfile.NamedTemporaryFile("w") as f:
