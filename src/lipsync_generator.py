@@ -10,8 +10,8 @@ class LipsyncGenerator:
 
     def generate_timestamp_script_list(self):
 
-        audio_file_name = 'hello_world.wav'
-        output_filename = "test_file"
+        audio_file_name = 'TRLT.wav'
+        output_filename = "TRLT"
 
         # explicitly specified set of keywords
         keyword_entries = None
