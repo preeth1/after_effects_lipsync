@@ -72,7 +72,7 @@ class LipsyncGenerator:
             phoneme_count = len(data_entry["phonemes"])
             for phoneme in data_entry["phonemes"]:
                 output_phoneme_dictionary[frame_to_add] = phoneme
-                frame_to_add += int(math.ceil((end_frame - start_frame / phoneme_count)))
+                frame_to_add += int(math.ceil((end_frame - start_frame) / phoneme_count))
 
         return output_phoneme_dictionary
 
