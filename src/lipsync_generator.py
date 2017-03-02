@@ -11,6 +11,7 @@ class LipsyncGenerator:
     def generate_timestamp_script_list(self):
 
         audio_file_name = 'hello_world.wav'
+        output_filename = "test_file"
 
         # explicitly specified set of keywords
         keyword_entries = None
@@ -34,9 +35,8 @@ class LipsyncGenerator:
 
         self.replace_phonemes_via_mapping(script_data)
         self.convert_times_to_frame_rates(script_data)
-        output_filename = "test_file"
-        self.write_phonemes_to_file(script_data, output_filename)
-
+        output_phoneme_dictionary = self.create_output_dictionary(script_data)
+        self.write_phonemes_to_file(output_phoneme_dictionary, output_filename)
         dummy=5
 
     @staticmethod
@@ -59,20 +59,30 @@ class LipsyncGenerator:
         frame_rate = 24.0
         one_frame_seconds = 1 / frame_rate
         for script_data_entry in script_data:
-            script_data_entry["start_frame"] = math.ceil(script_data_entry["start_time_s"] / one_frame_seconds)
-            script_data_entry["end_frame"] = math.ceil(script_data_entry["end_time_s"] / one_frame_seconds)
+            script_data_entry["start_frame"] = int(math.ceil(script_data_entry["start_time_s"] / one_frame_seconds))
+            script_data_entry["end_frame"] = int(math.ceil(script_data_entry["end_time_s"] / one_frame_seconds))
 
     @staticmethod
-    def write_phonemes_to_file(script_data, output_filename):
-        output_filepath = os.path.join(os.getcwd(), "../data" + output_filename + ".dat")
-        if os.path.exists(output_filepath):
-            # Write to that file
-            file = open(output_filepath, 'r')
-            dummy=4
-        else:
-            # Create and write to that file
-            file = open(output_filepath, 'w')
-            dummy=5
+    def create_output_dictionary(script_data):
+        output_phoneme_dictionary = {}
+        for data_entry in script_data:
+            start_frame = data_entry["start_frame"]
+            end_frame = data_entry["end_frame"]
+            frame_to_add = start_frame
+            phoneme_count = len(data_entry["phonemes"])
+            for phoneme in data_entry["phonemes"]:
+                output_phoneme_dictionary[frame_to_add] = phoneme
+                frame_to_add += int(math.ceil((end_frame - start_frame / phoneme_count)))
+
+        return output_phoneme_dictionary
+
+    @staticmethod
+    def write_phonemes_to_file(output_phoneme_dictionary, output_filename):
+        output_filepath = os.path.join(os.getcwd(), "../data/" + output_filename + ".dat")
+        # Create and write to that file
+        with open(output_filepath, 'w') as dat_file:
+            for frame, phoneme in output_phoneme_dictionary.iteritems():
+                dat_file.write('{} {}\n'.format(frame, phoneme))
 
 
 if __name__ == "__main__":
